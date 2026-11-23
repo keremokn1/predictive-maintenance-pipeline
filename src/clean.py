@@ -73,14 +73,22 @@ def main():
 
     total_clean = 0
     total_quarantine = 0
+    rejected = 0
+
     for path in sorted(INCOMING_DIR.glob("day_*.csv")):
-        clean, quarantine = clean_file(path)
+        try:
+            clean, quarantine = clean_file(path)
+        except ValueError as e:
+            print(f"REDDEDİLDİ: {path.name} -> {e}")
+            rejected += 1
+            continue
+
         clean.to_csv(CLEAN_DIR / path.name, index=False)
         quarantine.to_csv(QUARANTINE_DIR / path.name, index=False)
         total_clean += len(clean)
         total_quarantine += len(quarantine)
 
-    print(f"Temiz: {total_clean}, Karantina: {total_quarantine}")
+    print(f"Temiz: {total_clean}, Karantina: {total_quarantine}, Reddedilen dosya: {rejected}")
 
 
 if __name__ == "__main__":
