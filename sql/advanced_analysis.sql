@@ -54,3 +54,15 @@ SELECT risk_level,
 FROM risk_levels
 GROUP BY risk_level
 ORDER BY readings;
+
+-- 8.Identify quality types with failure rates above the overall average.
+WITH type_failure_rate AS(
+    SELECT type,
+           ROUND(AVG(machine_failure)::numeric * 100,1) AS failure_rate_pct
+    FROM sensor_readings  
+    GROUP BY type      
+)
+SELECT type,
+       failure_rate_pct 
+FROM type_failure_rate
+WHERE failure_rate_pct > (SELECT AVG(machine_failure) * 100 FROM sensor_readings);
