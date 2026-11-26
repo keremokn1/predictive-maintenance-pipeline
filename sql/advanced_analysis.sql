@@ -66,3 +66,32 @@ SELECT type,
        failure_rate_pct 
 FROM type_failure_rate
 WHERE failure_rate_pct > (SELECT AVG(machine_failure) * 100 FROM sensor_readings);
+
+-- 9. Hypothesis: tool wear increase depends on product type (L+2, M+3, H+5)
+SELECT type,
+       udi,
+       tool_wear_min,
+       LAG(type) OVER(ORDER BY udi) AS prev_type,
+       tool_wear_min - LAG(tool_wear_min) OVER(ORDER BY udi) AS wear_increase
+FROM sensor_readings
+ORDER BY udi
+LIMIT 10;
+
+-- 10. Test wear rule on all readings
+WITH wear_changes AS(
+    SELECT type,
+       udi,
+       tool_wear_min,
+       LAG(type) OVER(ORDER BY udi) AS prev_type,
+       tool_wear_min - LAG(tool_wear_min) OVER(ORDER BY udi) AS wear_increase
+FROM sensor_readings
+)
+SELECT prev_type,
+       wear_increase,              
+       COUNT(*) AS readings     
+FROM wear_changes
+GROUP BY prev_type,
+       wear_increase 
+ORDER BY readings DESC;
+
+       
